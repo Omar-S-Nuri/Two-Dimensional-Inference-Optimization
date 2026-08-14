@@ -1090,25 +1090,7 @@ empirical confirmation.
 
 ---
 
-# 27. Citation
-
-If you use this research, implementation or experimental methodology in
-academic or technical work, please cite the associated paper.
-
-```text
-Omar Nuri,
-"Two-Dimensional Inference Optimization in Deep Transformer Architectures:
-Dynamic-Adaptive Layer Routing, Post-Training Operator Fusion,
-Asynchronous Multi-Token Chaining, and Evolutionary Inference Validation",
-2026.
-```
-
-The final bibliographic reference should be updated if a DOI, journal,
-conference or arXiv identifier becomes available.
-
----
-
-# 28. Author
+# 27. Author
 
 **Omar Nuri**
 
@@ -1121,7 +1103,7 @@ GitHub:
 
 ---
 
-# 29. License
+# 28. License
 
 This repository is distributed under the **MIT License**.
 
@@ -1141,7 +1123,7 @@ subject to their respective licenses and terms.
 
 ---
 
-# 30. Research Status
+# 29. Research Status
 
 **Status: Experimental Research Prototype**
 
@@ -1159,16 +1141,32 @@ The repository is provided for:
 
 rather than as a production-ready inference framework.
 
+
+# 30. Citation
+
+If you use the concepts, implementation, or experimental results from this
+repository in academic work, please cite the accompanying paper.
+
+```text
+O. Nuri,
+"Two-Dimensional Inference Optimization in Deep Transformer Architectures:
+Dynamic-Adaptive Layer Routing, Post-Training Operator Fusion,
+Asynchronous Multi-Token Chaining, and Evolutionary Inference Validation,"
+2026.
+```
+
 ---
 
-## Acknowledgements
+## 31. Disclaimer
 
-The research builds upon established work in Transformer architectures,
-language modeling, representation analysis and neural network inference
-optimization.
+This repository contains experimental research software.
 
-Key foundational references are provided in the accompanying research
-paper.
+The implementation is provided for research and evaluation purposes.
+No guarantee is made that the optimization mechanisms preserve model
+behavior or improve inference performance under all configurations.
+
+Performance results reported in the accompanying paper are tied to the
+specific experimental conditions under which they were obtained. PLEASE NOTE: Without any guarantee.
 
 ---
 
