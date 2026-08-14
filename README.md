@@ -1,271 +1,150 @@
+# Two-Dimensional Inference Optimization in Deep Transformer Architectures
 
-# AIR — Adaptive Inference Routing
+## AIR — Adaptive Inference Routing
 
-**Research Project**
+**Research Project by Omar Nuri**  
+Independent Researcher — Computer Science and Machine Learning Systems
 
-AIR (Adaptive Inference Routing) is a research framework for
-dynamic inference optimization in deep Transformer architectures.
-
-The project investigates whether inference in autoregressive Transformer
-models can be accelerated by dynamically adapting the computational path
-to the characteristics of the current input.
-
-The framework combines two complementary optimization dimensions:
-
-- **Vertical inference optimization** through dynamic layer routing and
-  post-training operator fusion.
-- **Horizontal inference optimization** through Asynchronous Multi-Token
-  Chaining (MTC) and numerical Token-ID prefix structures.
-
-The framework additionally incorporates hidden-state-based validation and
-an early-abort mechanism for detecting inputs that are unsuitable for
-vertical compression.
-
----
-
-## Scientific Paper
-
-### Two-Dimensional Inference Optimization in Deep Transformer Architectures
-
-**Dynamic-Adaptive Layer Routing, Post-Training Operator Fusion,
-Asynchronous Multi-Token Chaining, and Evolutionary Inference Validation**
-
-**Author:**  
-Omar Nuri  
-Independent Researcher  
-Computer Science and Machine Learning Systems
-
-**Date:** August 2026
+**Paper:**  
+*Two-Dimensional Inference Optimization in Deep Transformer Architectures: Dynamic-Adaptive Layer Routing, Post-Training Operator Fusion, Asynchronous Multi-Token Chaining, and Evolutionary Inference Validation*
 
 **GitHub Repository:**  
 https://github.com/Omar-S-Nuri/Two-Dimensional-Inference-Optimization
 
 ---
 
-## Research Concept
+## Abstract
 
-Modern Transformer language models normally execute a largely fixed
-sequence of computational layers for every generated token.
+Modern Large Language Models (LLMs) rely on homogeneous, deep-layer
+architectures that incur computational costs for every input token,
+regardless of semantic complexity or predictability.
 
-AIR investigates a different approach.
+This research project introduces a modular inference optimization
+framework designed to reduce unnecessary computation in Transformer
+decoder architectures along two orthogonal dimensions:
 
-Instead of treating every token as requiring the same computational depth,
-the system analyzes intermediate model representations and attempts to
-identify computationally reusable paths.
+1. **Vertical inference optimization**
+2. **Horizontal inference optimization**
 
-The architecture is organized around two orthogonal dimensions.
+The vertical dimension, referred to as **Adaptive Inference Routing
+(AIR)**, analyzes intermediate Transformer representations and identifies
+potential layer equivalences. Validated layer shortcuts can subsequently
+be compiled through **Post-Training Operator Fusion**, allowing selected
+inference paths to bypass multiple intermediate layers.
 
-```text
-                         AIR
-              Adaptive Inference Routing
-                         │
-          ┌──────────────┴──────────────┐
-          │                             │
-          ▼                             ▼
-   VERTICAL DIMENSION           HORIZONTAL DIMENSION
-          │                             │
-   Layer Routing                 Multi-Token Chaining
-          │                             │
-   Operator Fusion                Token-ID Trie
-          │                             │
-   Shortcut Validation            In-Flight Learning
-          │                             │
-          └──────────────┬──────────────┘
-                         │
-                         ▼
-                 2D Inference Runtime
-````
+The horizontal dimension introduces **Asynchronous Multi-Token Chaining
+(MTC)**. A numerical Token-ID prefix structure continuously records
+high-confidence token transitions and can subsequently be used to
+identify deterministic phrase patterns during inference.
+
+The system additionally contains mechanisms for:
+
+- Logit-Lens-based activation analysis
+- Hidden-state and representation matching
+- Mathematical early-abort filtering
+- Shadow validation of candidate shortcuts
+- Evolutionary / in-flight inference routing
+- Model-specific persistent shortcut knowledge
+- CPU-oriented inference benchmarking
+- Token-identity verification
+
+The current implementation provides experimental support for
+**Meta Llama 3.2 1B** and **GPT-2**.
 
 ---
 
-# 1. Vertical Inference Optimization
+# 1. Research Objective
 
-The vertical dimension operates along the depth of the Transformer.
+The central objective of this project is to investigate whether
+Transformer inference can be dynamically optimized after model training
+without modifying or fine-tuning the original model weights.
 
-The system captures intermediate activations and analyzes the evolution of
-the model's output distributions across layers.
+Instead of assuming that every input token requires the complete
+computational depth of the model, AIR investigates whether portions of
+the computation can be safely reused, bypassed, or compressed when
+intermediate representations exhibit sufficient similarity.
 
-When two layers exhibit sufficiently high alignment, the corresponding
-computational path can become a candidate for a shortcut.
+The research therefore separates inference optimization into two
+dimensions.
 
-The general workflow is:
+### Vertical Dimension
+
+The vertical dimension operates across Transformer layers.
 
 ```text
 Input
   │
   ▼
-Transformer Layers
-  │
-  ├── Layer 0
-  ├── Layer 1
-  ├── Layer 2
-  ├── ...
-  ├── Layer N
+Layer 0
   │
   ▼
-Activation / Logit Analysis
+Layer 1
   │
   ▼
-Layer Equivalence Detection
+Layer 2
   │
   ▼
-Candidate Shortcut
+ ...
   │
   ▼
-Shadow Validation
-  │
-  ▼
-Operator Fusion
-  │
-  ▼
-Validated Fast Path
-```
+Layer N
+````
 
-The objective is to allow suitable inputs to bypass unnecessary
-computational layers without fine-tuning the original model.
-
----
-
-# 2. Dynamic-Adaptive Layer Routing
-
-AIR uses activation information collected during model execution.
-
-The system records intermediate representations through forward hooks and
-uses these representations for subsequent analysis.
-
-For supported architectures, the runtime captures:
-
-* residual-stream activations
-* MLP activations
-* model logits
-* token IDs
-* layer-level information required for shortcut analysis
-
-The current implementation provides model-specific infrastructure for:
-
-* Meta Llama architectures
-* GPT-2
-
-The architecture-specific implementations are separated into dedicated
-model-base modules.
-
----
-
-# 3. Post-Training Operator Fusion
-
-Candidate layer shortcuts can subsequently be processed by the operator
-fusion subsystem.
-
-The basic idea is to replace a sequence of individually executed
-operations with a mathematically constructed fused operator.
+AIR searches for situations where intermediate representations converge
+sufficiently that parts of this path may potentially be skipped.
 
 Conceptually:
 
 ```text
-Layer A
+Layer 0
    │
-   ▼
-Layer B
+   ├──────────────► Layer 8
    │
-   ▼
-Layer C
-   │
-   ▼
-Layer D
+   └── Layer 1 ... Layer 7 ──► bypassed
 ```
 
-may become:
-
-```text
-Layer A
-   │
-   ▼
-Fused Operator
-   │
-   ▼
-Layer D
-```
-
-The fusion process is therefore intended to reduce unnecessary intermediate
-computation during inference.
-
-AIR does not require modification of the original model parameters through
-conventional fine-tuning for the shortcut-generation process.
+Candidate shortcuts are subsequently subjected to validation before
+being considered eligible for optimized inference.
 
 ---
 
-# 4. Shortcut Validation
+# 2. Horizontal Dimension
 
-A candidate shortcut is not automatically considered valid.
+The second dimension operates across the temporal sequence of tokens.
 
-AIR uses a validation stage to distinguish potential computational
-shortcuts from routes that could negatively affect model behavior.
-
-Candidate shortcuts can progress through states such as:
+Standard autoregressive generation generally follows:
 
 ```text
-DISCOVERED
-    │
-    ▼
-PENDING
-    │
-    ▼
-VALIDATION
-    │
-    ▼
-VALIDATED
+Token 1
+   │
+   ▼
+Token 2
+   │
+   ▼
+Token 3
+   │
+   ▼
+Token 4
+   │
+   ▼
+...
 ```
 
-The validation infrastructure is designed to allow different validation
-windows for research/training and production configurations.
+The AIR/MTC concept investigates whether highly predictable token
+sequences can be represented as reusable chains.
 
----
-
-# 5. Horizontal Inference Optimization
-
-The second optimization dimension operates across the token sequence rather
-than across model depth.
-
-Autoregressive language models normally generate tokens sequentially:
+For example:
 
 ```text
-t1 → t2 → t3 → t4 → t5 → ...
+Token A → Token B → Token C → Token D
 ```
 
-AIR investigates whether highly predictable token sequences can be recognized
-and reused as learned chains.
+can be represented through a numerical prefix structure.
 
-The horizontal component is called:
-
-**Asynchronous Multi-Token Chaining (MTC)**
-
-The system maintains a numerical representation of learned token
-transitions using Token IDs rather than storing complete text phrases.
+The current implementation stores token IDs rather than complete text
+strings.
 
 Conceptually:
-
-```text
-Token A
-   │
-   ▼
-Token B
-   │
-   ▼
-Token C
-   │
-   ▼
-Token D
-```
-
-can be represented as a numerical prefix structure.
-
----
-
-# 6. Token-ID Trie
-
-The horizontal memory is implemented as a nested numerical structure.
-
-A simplified representation is:
 
 ```text
 prefix_token_1
@@ -277,454 +156,959 @@ prefix_token_1
             └── next_token_3
 ```
 
-The implementation stores numerical token IDs rather than textual phrases.
-
-This keeps the runtime structure compact and avoids textual search during
-inference.
-
-The current implementation uses the final two observed token IDs as the
-prefix context for horizontal chain registration.
+This structure is referred to as the **Horizontal Token-ID Trie**.
 
 ---
 
-# 7. In-Flight Learning
+# 3. Two-Dimensional AIR Architecture
 
-Horizontal chains can be learned during processing of a corpus or during
-runtime operation.
+The overall research architecture combines both dimensions:
 
-The general process is:
+```text
+                    AIR Runtime
+                        │
+          ┌─────────────┴─────────────┐
+          │                           │
+          ▼                           ▼
+   Vertical Routing             Horizontal MTC
+          │                           │
+          ▼                           ▼
+ Layer Equivalence             Token-ID Trie
+          │                           │
+          ▼                           ▼
+ Operator Fusion               Phrase Chains
+          │                           │
+          └─────────────┬─────────────┘
+                        │
+                        ▼
+              Evolutionary Runtime
+                        │
+                        ▼
+                 Model Inference
+```
+
+The two mechanisms are complementary rather than mutually exclusive.
+
+The vertical mechanism operates primarily across network depth, while
+the horizontal mechanism operates across token sequence progression.
+
+---
+
+# 4. Main Components
+
+The repository contains the following principal components.
+
+## 4.1 Adaptive Inference Routing
+
+AIR provides the infrastructure for identifying potential inference
+shortcuts through analysis of intermediate model representations.
+
+Candidate routes are stored in a persistent shortcut knowledge base.
+
+A candidate route contains information such as:
+
+```text
+start layer
+end layer
+similarity / confidence
+validation status
+```
+
+Candidate routes initially enter a pending state and can subsequently be
+validated.
+
+---
+
+## 4.2 Logit-Lens Flow Analysis
+
+The analyzer extracts information from intermediate Transformer
+activations and evaluates their representational behavior.
+
+The analysis is used to identify potential convergence between different
+network depths.
+
+The implementation is contained primarily in:
+
+```text
+analyzer.py
+```
+
+---
+
+## 4.3 Post-Training Operator Fusion
+
+Validated layer routes can be transformed into fused computational
+operators.
+
+The purpose is to avoid repeatedly executing a sequence of intermediate
+operations when the learned AIR route determines that a shortcut is
+eligible.
+
+The repository contains separate implementations for the supported
+architectures:
+
+```text
+compiler.py
+compiler_llama.py
+```
+
+---
+
+## 4.4 Horizontal Multi-Token Chaining
+
+The horizontal component maintains a numerical Token-ID Trie.
+
+A token sequence is analyzed during training / in-flight processing and
+high-confidence transitions can be registered in the persistent
+horizontal knowledge structure.
+
+The relevant implementation is located in:
+
+```text
+shortcut_engine.py
+```
+
+The horizontal knowledge structure is persisted together with the
+vertical shortcut map.
+
+---
+
+## 4.5 Shadow Validation
+
+Candidate shortcuts are not automatically assumed to be correct.
+
+The repository contains a shadow-validation mechanism that evaluates
+candidate routes before they become fully validated.
+
+Implementation:
+
+```text
+shadow_validator.py
+```
+
+The current configuration provides separate stability windows for
+training and production:
+
+```python
+STABILITY_WINDOW_TRAINING = 1
+STABILITY_WINDOW_PRODUCTION = 2
+```
+
+---
+
+## 4.6 Evolutionary Inference Engine
+
+The runtime component combines learned AIR knowledge with the inference
+process.
+
+Implementation:
+
+```text
+inference_onthefly_v2.py
+```
+
+The engine can select between optimized and standard inference paths
+depending on the available shortcut knowledge and runtime conditions.
+
+---
+
+# 5. Current Configuration
+
+Central parameters are defined in:
+
+```text
+config.py
+```
+
+The current experimental configuration is:
+
+```python
+GLOBAL_THRESHOLD = 0.92
+EARLY_ABORT_THRESHOLD = 0.45
+
+STABILITY_WINDOW_TRAINING = 1
+STABILITY_WINDOW_PRODUCTION = 2
+```
+
+## GLOBAL_THRESHOLD
+
+```python
+GLOBAL_THRESHOLD = 0.92
+```
+
+This is the central convergence / confidence threshold used by the
+current AIR implementation.
+
+It is used for determining whether a representation similarity or
+token-level confidence satisfies the configured threshold for the
+corresponding mechanism.
+
+## EARLY_ABORT_THRESHOLD
+
+```python
+EARLY_ABORT_THRESHOLD = 0.45
+```
+
+This parameter controls the early-abort mechanism used during vertical
+layer analysis.
+
+If the initial representational similarity falls below the configured
+threshold, the vertical search can be terminated early.
+
+This is intended to avoid unnecessary analysis of inference paths that
+already exhibit insufficient convergence.
+
+## Stability Windows
+
+Training:
+
+```python
+STABILITY_WINDOW_TRAINING = 1
+```
+
+Production:
+
+```python
+STABILITY_WINDOW_PRODUCTION = 2
+```
+
+These parameters control the number of successful shadow-validation
+observations required by the respective runtime configuration.
+
+---
+
+# 6. Supported Models
+
+The current repository contains model backends for:
+
+## Meta Llama 3.2 1B
+
+Backend:
+
+```text
+model_base_llama.py
+```
+
+The implementation uses the Hugging Face Transformers architecture and
+supports loading the model either from a local directory or through the
+configured model identifier.
+
+The current default model identifier is:
+
+```text
+unsloth/Llama-3.2-1B
+```
+
+---
+
+## GPT-2
+
+Backend:
+
+```text
+model_base.py
+```
+
+GPT-2 is included as an additional experimental backend and provides a
+smaller environment for testing the AIR mechanisms.
+
+---
+
+# 7. Persistent Knowledge Base
+
+AIR maintains a model-specific persistent knowledge base.
+
+The current configuration defines:
+
+```python
+STORAGE_PATH_GPT2
+STORAGE_PATH_LLAMA
+```
+
+These paths are generated dynamically from the location of `config.py`.
+
+The stored structure contains two principal components:
+
+```text
+vertical
+horizontal
+```
+
+Conceptually:
+
+```python
+{
+    "vertical": {
+        ...
+    },
+
+    "horizontal": {
+        ...
+    }
+}
+```
+
+The vertical component contains learned layer shortcuts.
+
+The horizontal component contains learned Token-ID prefix chains.
+
+The knowledge base is stored using PyTorch serialization.
+
+---
+
+# 8. Training / Backbone Learning
+
+The main backbone training script is:
+
+```text
+train_router_backbone_2_6.py
+```
+
+The training system maintains model-specific processing histories.
+
+For example:
+
+```text
+processed_files_llama3.txt
+processed_files_gpt2.txt
+```
+
+This allows the training process to distinguish the learning history of
+different model backends.
+
+The training process can operate in three modes:
+
+```text
+v1
+v2
+both
+```
+
+### v1
+
+Focuses on the vertical inference optimization path:
+
+```text
+Activation Capture
+       ↓
+Flow Analysis
+       ↓
+Layer Equivalence
+       ↓
+Candidate Shortcuts
+       ↓
+Validation / Compilation
+```
+
+### v2
+
+Focuses on the horizontal Token-ID chain mechanism:
 
 ```text
 Input Text
-    │
-    ▼
-Tokenizer
-    │
-    ▼
-Token IDs
-    │
-    ▼
-Model Forward Pass
-    │
-    ▼
-Logits
-    │
-    ▼
-Top Token Probability
-    │
-    ▼
-Confidence Threshold
-    │
-    ├── below threshold → no chain
-    │
-    └── above threshold → register chain
+    ↓
+Tokenization
+    ↓
+Logit Analysis
+    ↓
+Confidence Evaluation
+    ↓
+Horizontal Trie Registration
 ```
 
-The resulting knowledge can be stored and reused by later inference runs.
+### both
+
+Combines the two mechanisms within the experimental AIR runtime.
 
 ---
 
-# 8. Current Experimental Configuration
+# 9. Benchmarking
 
-The central parameters are defined in `config.py`.
+The repository includes dedicated benchmarking and accuracy-evaluation
+scripts.
 
-The current configuration is:
-
-```python
-GLOBAL_THRESHOLD = 0.92
-
-EARLY_ABORT_THRESHOLD = 0.45
-
-STABILITY_WINDOW_TRAINING = 1
-STABILITY_WINDOW_PRODUCTION = 2
-```
-
-## Global Threshold
-
-```python
-GLOBAL_THRESHOLD = 0.92
-```
-
-The current implementation uses this value as the principal confidence /
-similarity threshold for shortcut registration.
-
-For vertical routing, it is used as the minimum cosine similarity between
-layer-level probability distributions required to register a potential
-layer shortcut.
-
-For horizontal Multi-Token Chaining, it is used as the minimum top-token
-probability required to register a token transition.
-
-The value `0.92` represents the **current experimental configuration**.
-It should not be interpreted as a universally established mathematical
-optimum.
-
-## Early-Abort Threshold
-
-```python
-EARLY_ABORT_THRESHOLD = 0.45
-```
-
-The Early-Abort mechanism is used during vertical shortcut analysis.
-
-The system first compares the probability distributions of an early layer
-and an intermediate layer.
-
-If the measured similarity falls below the configured threshold, the
-vertical layer-equivalence scan is aborted for the current input.
-
-This is intended to avoid unnecessary analysis of inputs for which
-layer-level compression is unlikely to be useful.
-
-## Shadow Validation
-
-```python
-STABILITY_WINDOW_TRAINING = 1
-STABILITY_WINDOW_PRODUCTION = 2
-```
-
-These parameters define the configured validation window for candidate
-shortcuts.
-
-The training configuration uses an accelerated validation setting, while
-the production configuration is more conservative.
+These experiments have different purposes and should not be interpreted
+as identical measurements.
 
 ---
 
-# 9. Two-Dimensional Runtime
+## 9.1 Llama Production Benchmark
 
-The two optimization dimensions are intended to operate together.
+Script:
 
 ```text
-                         INPUT
-                           │
-                           ▼
-                    Transformer Model
-                           │
-             ┌─────────────┴─────────────┐
-             │                           │
-             ▼                           ▼
-      Vertical Analysis          Horizontal Analysis
-             │                           │
-       Layer Similarity              Token IDs
-             │                           │
-       Shortcut Candidate          Token Probability
-             │                           │
-       Shadow Validation            Token-ID Trie
-             │                           │
-       Operator Fusion             MTC Candidate
-             │                           │
-             └─────────────┬─────────────┘
-                           │
-                           ▼
-                  Adaptive Runtime Path
+benchmarks/run_benchmarks_llama.py
 ```
 
-The intended result is a runtime capable of selecting between conventional
-execution and learned computational shortcuts.
+This benchmark compares two runtime configurations:
+
+```text
+SLOW-TRACK
+```
+
+against:
+
+```text
+AIR 2D-TRACK
+```
+
+The benchmark uses a standardized corpus of 50 test prompts.
+
+The SLOW-TRACK disables the learned shortcut structures and measures the
+baseline runtime.
+
+The AIR 2D-TRACK restores the learned shortcut structures and evaluates
+the optimized runtime.
+
+The benchmark reports:
+
+```text
+Total Latency SLOW-TRACK
+Total Latency AIR 2D-TRACK
+Net Efficiency Increase
+```
+
+The purpose of this benchmark is to evaluate runtime performance under
+the experimental configuration.
 
 ---
 
-# 10. Supported Model Infrastructure
+# 10. Accuracy and Token Identity Evaluation
 
-The repository currently contains separate model adapters for different
-Transformer architectures.
+Two additional scripts are provided.
 
-### Llama
-
-The Llama implementation uses:
+## 10.1 Accuracy Benchmark
 
 ```text
-AdaptiveLlamaBase
+benchmarks/run_accuracy_benchmark.py
 ```
 
-and supports the local loading and instrumentation of:
+This script compares the next-token prediction of:
 
 ```text
-Meta Llama 3.2 1B
+Standard / SLOW inference
 ```
 
-The implementation uses forward hooks to capture intermediate layer
-activations.
-
-### GPT-2
-
-The GPT-2 implementation uses:
+against:
 
 ```text
-AdaptiveTransformerBase
+AIR optimized inference
 ```
 
-and provides the corresponding activation-capture infrastructure for the
-GPT-2 architecture.
+The benchmark measures whether the optimized path produces the same
+predicted token as the reference path.
+
+The primary reported metric is:
+
+```text
+Token Identity
+```
+
+This experiment is intended to evaluate whether shortcut activation
+changes the model's predicted next token.
 
 ---
 
-# 11. Repository Structure
+## 10.2 Pure AIR Knowledge Check
 
-The repository is organized around the inference engine, model adapters,
-analysis, routing, validation, and benchmarking components.
+```text
+benchmarks/run_accuracy_check.py
+```
 
-A typical project structure is:
+This script performs a more selective evaluation.
+
+Only prompts for which the AIR Fast-Track is actually activated are
+included in the fidelity calculation.
+
+Standard SLOW-TRACK fallbacks are excluded.
+
+The purpose is therefore different from the general accuracy benchmark.
+
+It measures the fidelity of the shortcuts that actually activated rather
+than the overall activation rate.
+
+---
+
+# 11. Experimental Results
+
+The accompanying research paper reports an experimental evaluation of
+the AIR framework using Meta Llama 3.2 1B on an x86 CPU environment.
+
+The paper reports the following experimental comparison:
+
+```text
+Slow-Track baseline:       19,029.58 ms
+Pure Vertical Compression: 19,042.45 ms
+Integrated 2D-Track:       17,575.56 ms
+```
+
+The reported integrated 2D result corresponds to an experimental latency
+reduction of approximately:
+
+```text
+-7.64%
+```
+
+These numbers are experimental observations from the research setup and
+should not be interpreted as universal performance guarantees.
+
+Actual results can vary depending on:
+
+* CPU architecture
+* memory bandwidth
+* operating system
+* Python version
+* PyTorch version
+* Transformers version
+* model precision
+* thermal conditions
+* background processes
+* model loading state
+* local hardware configuration
+
+For this reason, the benchmark scripts are included so that independent
+experiments can be performed.
+
+---
+
+# 12. Research Paper
+
+The scientific description of the architecture is provided in the
+accompanying paper:
+
+> **Two-Dimensional Inference Optimization in Deep Transformer
+> Architectures: Dynamic-Adaptive Layer Routing, Post-Training Operator
+> Fusion, Asynchronous Multi-Token Chaining, and Evolutionary Inference
+> Validation**
+
+The paper describes:
+
+* the theoretical motivation
+* the vertical routing mechanism
+* post-training operator fusion
+* asynchronous Multi-Token Chaining
+* Token-ID Trie structures
+* hidden-state matching
+* mathematical early-abort filtering
+* evolutionary inference validation
+* CPU benchmarking
+* experimental limitations
+* potential future GPU investigations
+
+The paper should be considered the primary scientific description of the
+research architecture.
+
+---
+
+# 13. Repository Structure
+
+The recommended repository structure is:
 
 ```text
 Two-Dimensional-Inference-Optimization/
 │
-├── config.py
-│
-├── shortcut_engine.py
-│
-├── inference_onthefly_v2.py
-│
-├── train_router_backbone_2_6_2.py
-│
-├── model_base.py
-├── model_base_llama.py
-│
-├── analyzer.py
-│
-├── compiler.py
-├── compiler_llama.py
-│
-├── shadow_validator.py
-│
-├── app_onthefly.py
-│
-├── run_accuracy_benchmark.py
-├── run_accuracy_check.py
-│
-├── run_benchmarks.py
-│
-├── training_corpus/
+├── README.md
+├── LICENSE
+├── requirements.txt
+├── .gitignore
 │
 ├── paper/
+│   └── two_dimensional_inference_optimization.pdf
 │
-├── README.md
+├── config.py
+├── shortcut_engine.py
+├── analyzer.py
+├── inference_onthefly_v2.py
+├── model_base.py
+├── model_base_llama.py
+├── compiler.py
+├── compiler_llama.py
+|── shadow_validator.py
 │
-└── LICENSE
+├── train_router_backbone_2_6_2.py
+|── generate_local_training_data.py
+│
+├── run_benchmarks.py
+├── run_benchmarks_llama.py
+├── run_accuracy_benchmark.py
+|── run_accuracy_check.py
+│
+|── app_onthefly.py
 ```
 
-The exact repository contents may change as the research implementation
-evolves.
+The exact organization may differ depending on the local development
+environment.
 
 ---
 
-# 12. Training / Research Pipeline
+# 14. Installation
 
-The experimental backbone-training process is designed to process corpus
-sentences and incrementally build inference knowledge.
+Clone the repository:
 
-A simplified pipeline is:
+```bash
+git clone https://github.com/Omar-S-Nuri/Two-Dimensional-Inference-Optimization.git
+```
+
+Enter the repository:
+
+```bash
+cd Two-Dimensional-Inference-Optimization
+```
+
+Create a Python virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Activate it on Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+On Linux/macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# 15. Model Preparation
+
+The model backend can load models from a local directory.
+
+For Llama, the current implementation expects:
 
 ```text
-Training Corpus
-      │
-      ▼
-Sentence Loader
-      │
-      ▼
-Model Forward Pass
-      │
-      ├──────────────────────┐
-      │                      │
-      ▼                      ▼
-Vertical Analysis      Horizontal Analysis
-      │                      │
-      ▼                      ▼
-Layer Similarity        Token Probability
-      │                      │
-      ▼                      ▼
-Shortcut Candidate       Token Chain
-      │                      │
-      ▼                      ▼
-Shadow Validation        Trie Storage
-      │                      │
-      └──────────┬───────────┘
-                 ▼
-          Persistent Storage
+./local_llama_free
 ```
 
-The training pipeline also maintains a model-specific processing history so
-that previously processed corpus files can be skipped on subsequent runs.
+if the model has already been downloaded.
+
+If the directory is not available, the model backend can load the
+configured model through Hugging Face Transformers and subsequently save
+the model locally.
+
+Model weights are intentionally **not included in this repository**.
 
 ---
 
-# 13. Persistent Knowledge Storage
+# 16. Running the Training Pipeline
 
-AIR stores the learned shortcut structures separately from the base model.
+The backbone training system can be executed using:
 
-The current configuration defines model-specific storage paths:
+```bash
+python train_router_backbone_2_6.py both llama3 1000
+```
+
+The arguments are:
+
+```text
+argument 1 = mode
+argument 2 = model
+argument 3 = number of sentences
+```
+
+Examples:
+
+```bash
+python train_router_backbone_2_6_2.py v1 llama3 100
+```
+
+```bash
+python train_router_backbone_2_6_2.py v2 llama3 100
+```
+
+```bash
+python train_router_backbone_2_6_2.py both llama3 1000
+```
+
+For GPT-2:
+
+```bash
+python train_router_backbone_2_6_2.py both gpt2 1000
+```
+
+The actual available command depends on the repository layout and the
+location of the training script.
+
+---
+
+# 17. Running the Llama Benchmark
+
+After a knowledge base has been generated:
+
+```bash
+python run_benchmarks_llama.py
+```
+
+OR 
+
+```bash
+python run_benchmarks.py
+```
+
+
+The benchmark performs:
+
+```text
+1. Model initialization
+2. AIR knowledge loading
+3. Baseline measurement
+4. AIR 2D measurement
+5. Latency comparison
+6. Efficiency calculation
+```
+
+---
+
+# 18. Running the Accuracy Benchmark
+
+Run:
+
+```bash
+python run_accuracy_benchmark.py
+```
+
+This evaluates next-token identity between the reference and optimized
+inference paths.
+
+---
+
+# 19. Running the Pure Knowledge Check
+
+Run:
+
+```bash
+python run_accuracy_check.py
+```
+
+This evaluates only prompts for which an AIR Fast-Track was activated.
+
+---
+
+# 20. Important Reproducibility Notes
+
+The AIR project is an experimental research implementation.
+
+The reported benchmark numbers are dependent on the exact experimental
+environment.
+
+For meaningful comparisons, record at least:
+
+```text
+CPU
+RAM
+Operating System
+Python version
+PyTorch version
+Transformers version
+Model version
+Model precision
+GLOBAL_THRESHOLD
+EARLY_ABORT_THRESHOLD
+Number of prompts
+```
+
+Benchmark runs should ideally be repeated multiple times.
+
+A single timing run should not be interpreted as a statistically
+complete performance characterization.
+
+---
+
+# 21. Generated Files
+
+The following files may be generated during execution:
+
+```text
+shortcuts_llama.pt
+shortcuts_gpt2.pt
+processed_files_llama3.txt
+processed_files_gpt2.txt
+```
+
+These files represent local experimental state.
+
+They should generally **not** be committed to the public repository
+unless a specific experiment requires them.
+
+Large model directories should also not be committed.
+
+For example:
+
+```text
+local_llama_free/
+```
+
+should remain outside the Git repository.
+
+---
+
+# 22. Security and Privacy
+
+The runtime and training components can process user-provided text.
+
+If the system is connected to a live application, users should ensure
+that private or personally identifiable information is not unintentionally
+included in experimental training corpora or persistent inference
+knowledge bases.
+
+The repository itself does not require user credentials or API keys for
+the core experimental architecture.
+
+Do not commit:
+
+```text
+API keys
+passwords
+access tokens
+private datasets
+personal user logs
+private model credentials
+local absolute paths
+```
+
+---
+
+# 23. Scientific Scope
+
+This repository is intended as a research prototype.
+
+The project investigates whether learned inference shortcuts can reduce
+unnecessary computation while preserving the output behavior of the
+underlying model.
+
+It does **not** claim that every Transformer architecture can achieve
+the same performance improvement.
+
+Likewise, the reported CPU measurements should not be interpreted as a
+general guarantee of speedup across all hardware or model sizes.
+
+The purpose of the repository is to provide an implementation through
+which the proposed mechanisms can be inspected, tested, benchmarked and
+further developed.
+
+---
+
+# 24. Limitations
+
+The current implementation has several experimental limitations.
+
+### Model Coverage
+
+The current code primarily targets:
+
+* Meta Llama 3.2 1B
+* GPT-2
+
+Additional Transformer architectures may require architecture-specific
+backend and compiler implementations.
+
+### Hardware Dependence
+
+Performance is highly dependent on the underlying hardware and software
+stack.
+
+### Threshold Dependence
+
+The behavior of shortcut discovery and activation depends on parameters
+such as:
 
 ```python
-STORAGE_PATH_GPT2 = ...
-STORAGE_PATH_LLAMA = ...
+GLOBAL_THRESHOLD
+EARLY_ABORT_THRESHOLD
 ```
 
-The shortcut engine stores both dimensions in a common payload structure:
+Changing these values can substantially alter the number of candidate
+shortcuts and their activation behavior.
 
-```python
-{
-    "vertical": ...,
-    "horizontal": ...
-}
-```
+### Benchmark Size
 
-This allows vertical and horizontal inference knowledge to be loaded
-incrementally when the runtime starts.
+The current benchmark uses a standardized 50-prompt evaluation corpus.
+
+This is useful for controlled experiments but is not equivalent to a
+large-scale production workload.
+
+### Validation
+
+The current validation system is designed as an experimental mechanism
+and should not be interpreted as a formal proof of mathematical
+equivalence between the original and optimized networks.
 
 ---
 
-# 14. Experimental Results
+# 25. Future Research
 
-The accompanying paper reports experimental measurements using
-Meta Llama 3.2 1B on x86 CPU infrastructure.
+Potential future directions include:
 
-The reported integrated 2D runtime achieved a measured latency reduction
-relative to the reported baseline in the corresponding experiment.
+* larger language models
+* broader Transformer architectures
+* longer horizontal token chains
+* adaptive confidence thresholds
+* improved entropy estimation
+* more extensive hidden-state matching
+* larger evaluation corpora
+* statistical benchmark analysis
+* GPU evaluation
+* HBM-oriented optimization
+* kernel-level optimization
+* multi-token speculative verification
+* more sophisticated shortcut invalidation
+* distributed inference experiments
 
-The paper reports:
+The GPU performance values discussed in the paper are projections /
+research hypotheses and require dedicated hardware experiments for
+empirical confirmation.
+
+---
+
+# 26. Terminology
+
+| Term               | Meaning                                                               |
+| ------------------ | --------------------------------------------------------------------- |
+| AIR                | Adaptive Inference Routing                                            |
+| 2D Runtime         | Combined vertical and horizontal inference optimization               |
+| Vertical Routing   | Optimization across Transformer depth                                 |
+| Horizontal MTC     | Optimization across token sequence progression                        |
+| MTC                | Asynchronous Multi-Token Chaining                                     |
+| Token-ID Trie      | Numerical prefix structure for token sequences                        |
+| Operator Fusion    | Combination of computational operators into fused structures          |
+| Shadow Validation  | Validation of candidate shortcuts without immediately relying on them |
+| Early-Abort Filter | Mechanism for terminating unsuitable shortcut searches                |
+| Fast-Track         | Optimized inference route                                             |
+| Slow-Track         | Reference / standard inference route                                  |
+| Token Fidelity     | Agreement between optimized and reference token prediction            |
+
+---
+
+# 27. Citation
+
+If you use this research, implementation or experimental methodology in
+academic or technical work, please cite the associated paper.
 
 ```text
-Slow-Track baseline:       19,029.58 ms
-Integrated 2D-Track:       17,575.56 ms
-
-Reported latency change:   -7.64%
-```
-
-The repository should be considered a research implementation. Reported
-measurements are experimental results under the configurations described
-in the paper and should not be interpreted as universal performance
-guarantees across hardware, models, datasets, or software environments.
-
----
-
-# 15. GPU Projection
-
-The paper also discusses a projected performance range for GPU
-infrastructure such as NVIDIA H100-class systems.
-
-The reported projection estimates a potential latency reduction in the range
-of:
-
-```text
-30% – 50%
-```
-
-This is a projection rather than a measured result from the current
-repository and should therefore be distinguished from the reported x86 CPU
-measurements.
-
----
-
-# 16. Research Status
-
-AIR is an experimental research project.
-
-The current work focuses on:
-
-* dynamic inference routing
-* post-training operator fusion
-* shortcut discovery
-* shortcut validation
-* Token-ID based horizontal chaining
-* in-flight learning
-* CPU inference optimization
-* two-dimensional inference architectures
-
-The system is under active development.
-
-Interfaces, algorithms, thresholds, validation mechanisms, and storage
-formats may change as experimental results are obtained.
-
----
-
-# 17. Reproducibility
-
-The repository is intended to make the research implementation available
-for inspection and experimentation.
-
-To reproduce experiments, the following factors should be recorded:
-
-* model architecture
-* model version
-* model weights
-* tokenizer version
-* Python version
-* PyTorch version
-* Transformers version
-* hardware
-* numerical precision
-* corpus
-* benchmark configuration
-* AIR configuration parameters
-
-Performance results can vary substantially depending on these parameters.
-
----
-
-# 18. Important Experimental Note
-
-AIR does not claim that every token or every input benefits from
-compression.
-
-The central hypothesis is that Transformer inference contains regions of
-computational redundancy and highly predictable token transitions that can
-potentially be exploited dynamically.
-
-The system therefore attempts to identify suitable cases rather than
-forcing every input through an optimized path.
-
-The Early-Abort mechanism and validation infrastructure are important parts
-of this design.
-
----
-
-# 19. Research Hypothesis
-
-The central research hypothesis can be summarized as:
-
-> **Transformer inference can potentially be accelerated by dynamically
-> adapting both computational depth and token-sequence execution to the
-> observed predictability of the current input.**
-
-The vertical dimension addresses computational depth.
-
-The horizontal dimension addresses sequential token generation.
-
-Together they form the two-dimensional inference optimization approach
-investigated by AIR.
-
----
-
-# 20. Citation
-
-If you use the concepts, implementation, or experimental results from this
-repository in academic work, please cite the accompanying paper.
-
-```text
-O. Nuri,
+Omar Nuri,
 "Two-Dimensional Inference Optimization in Deep Transformer Architectures:
 Dynamic-Adaptive Layer Routing, Post-Training Operator Fusion,
-Asynchronous Multi-Token Chaining, and Evolutionary Inference Validation,"
+Asynchronous Multi-Token Chaining, and Evolutionary Inference Validation",
 2026.
 ```
 
----
-
-# 21. License
-
-This repository is distributed under the license specified in:
-
-```text
-LICENSE
-```
-
-Please review the license before using, modifying, or redistributing the
-software.
+The final bibliographic reference should be updated if a DOI, journal,
+conference or arXiv identifier becomes available.
 
 ---
 
-# 22. Author
+# 28. Author
 
 **Omar Nuri**
 
@@ -737,22 +1121,60 @@ GitHub:
 
 ---
 
-# 23. Disclaimer
+# 29. License
 
-This repository contains experimental research software.
+This repository is distributed under the **MIT License**.
 
-The implementation is provided for research and evaluation purposes.
-No guarantee is made that the optimization mechanisms preserve model
-behavior or improve inference performance under all configurations.
+See:
 
-Performance results reported in the accompanying paper are tied to the
-specific experimental conditions under which they were obtained. PLEASE NOTE: Without any guarantee.
+```text
+LICENSE
+```
+
+for the complete license text.
+
+The license applies to the original source code contained in this
+repository.
+
+Third-party software, pretrained models, datasets and dependencies remain
+subject to their respective licenses and terms.
 
 ---
 
-## Project
+# 30. Research Status
 
-**AIR — Adaptive Inference Routing**
+**Status: Experimental Research Prototype**
 
-**Two-dimensional inference optimization for deep Transformer
-architectures.**
+The implementation is actively developed and may change as the
+underlying research evolves.
+
+The repository is provided for:
+
+* research
+* experimentation
+* reproducibility
+* benchmarking
+* inspection
+* further development
+
+rather than as a production-ready inference framework.
+
+---
+
+## Acknowledgements
+
+The research builds upon established work in Transformer architectures,
+language modeling, representation analysis and neural network inference
+optimization.
+
+Key foundational references are provided in the accompanying research
+paper.
+
+---
+
+## Repository
+
+**Two-Dimensional Inference Optimization**
+
+[https://github.com/Omar-S-Nuri/Two-Dimensional-Inference-Optimization](https://github.com/Omar-S-Nuri/Two-Dimensional-Inference-Optimization)
+
