@@ -532,12 +532,17 @@ as identical measurements.
 
 ---
 
-## 9.1 Llama Production Benchmark
+## 9.1 Llama / GPT2 Production Benchmark
 
 Script:
 
 ```text
-benchmarks/run_benchmarks_llama.py
+run_benchmarks_llama.py
+
+and correspondingly for GPT-2: 
+
+run_benchmarks.py
+
 ```
 
 This benchmark compares two runtime configurations:
