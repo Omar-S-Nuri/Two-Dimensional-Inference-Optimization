@@ -806,7 +806,7 @@ Model weights are intentionally **not included in this repository**.
 The backbone training system can be executed using:
 
 ```bash
-python train_router_backbone_2_6.py both llama3 1000
+python train_router_backbone_2_6_2.py both llama3 1000
 ```
 
 The arguments are:
