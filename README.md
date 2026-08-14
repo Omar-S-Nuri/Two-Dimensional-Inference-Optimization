@@ -580,7 +580,7 @@ Two additional scripts are provided.
 ## 10.1 Accuracy Benchmark
 
 ```text
-benchmarks/run_accuracy_benchmark.py
+run_accuracy_benchmark.py
 ```
 
 This script compares the next-token prediction of:
@@ -612,7 +612,7 @@ changes the model's predicted next token.
 ## 10.2 Pure AIR Knowledge Check
 
 ```text
-benchmarks/run_accuracy_check.py
+run_accuracy_check.py
 ```
 
 This script performs a more selective evaluation.
