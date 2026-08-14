@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Omar-S-Nuri
+Copyright (c) 2026 Omar Nuri
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+ADDITIONAL NOTICE REGARDING THE RESEARCH PAPER AND DOCUMENTATION
+
+The MIT License applies to the source code of this repository and its
+associated software components.
+
+The accompanying research paper, scientific publication, research results,
+figures, tables, and documentation are not automatically licensed under the
+MIT License.
+
+Copyright (c) 2026 Omar Nuri
+
+Unless explicitly stated otherwise, the research paper, scientific
+publication, research results, figures, tables, and documentation remain
+protected by applicable copyright law. No permission is granted to reproduce,
+republish, modify, distribute, or commercially exploit these materials beyond
+the rights granted by applicable law without prior written permission from
+the copyright holder.
