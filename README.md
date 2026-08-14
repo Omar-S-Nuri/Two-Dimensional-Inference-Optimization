@@ -847,7 +847,7 @@ location of the training script.
 
 ---
 
-# 17. Running the Llama Benchmark
+# 17. Running the Llama / GPT2 Benchmark
 
 After a knowledge base has been generated:
 
