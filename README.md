@@ -490,6 +490,9 @@ Two-Dimensional-Inference-Optimization/
 │
 ├── app_onthefly.py
 │
+├── run_accuracy_benchmark.py
+├── run_accuracy_check.py
+│
 ├── run_benchmarks.py
 │
 ├── training_corpus/
@@ -753,5 +756,3 @@ specific experimental conditions under which they were obtained. PLEASE NOTE: Wi
 
 **Two-dimensional inference optimization for deep Transformer
 architectures.**
-
-```
